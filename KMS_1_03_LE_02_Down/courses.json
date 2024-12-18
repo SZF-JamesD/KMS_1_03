@@ -1,0 +1,14 @@
+[
+    {
+        "course name": "Python 101",
+        "description": "Learn python basics",
+        "employee ID": "E001",
+        "participants": [
+            {
+                "id": "C002",
+                "first name": "Jimmy",
+                "last name": "John"
+            }
+        ]
+    }
+]
