@@ -11,7 +11,7 @@ class Factory:
     
     @staticmethod
     def create_course(course_data):
-        from person_class import Customer, Employee
+        #from person_class import Customer, Employee
         from course import Course
         if course_data:
             course = Course(course_name=course_data["course name"],

@@ -35,22 +35,21 @@ class Vehicle(ABC):
     @classmethod
     def get_total_mileage(cls):
         return cls.total_mileage
-    
-from vehicle import Vehicle
+ 
 
 class Bicycle(Vehicle):
     def __init__(self, registration_no, brand, mileage, status, fuel_capacity, current_fuel_level, bike_type, basket):
         super().__init__(registration_no, brand, mileage, status, fuel_capacity, current_fuel_level)
         self.bike_type = bike_type
         self.basket = basket
-
+    @abstractmethod
     def update_mileage(self, new_mileage):
         self.mileage = new_mileage
 
     def maintenance(self):
         print(f"Bicycle {self.registration_no} is undergoing maintenance.")
 
-from vehicle import Vehicle
+
 
 class Car(Vehicle):
     def __init__(self, registration_no, brand, mileage, status, fuel_capacity, current_fuel_level, no_seats, trunk_capacity):
@@ -64,7 +63,7 @@ class Car(Vehicle):
     def maintenance(self):
         print(f"Car {self.registration_no} is undergoing maintenance.")
 
-from vehicle import Vehicle
+
 
 class Motorcycle(Vehicle):
     def __init__(self, registration_no, brand, mileage, status, fuel_capacity, current_fuel_level, engine_displacement, sidecar):
@@ -78,7 +77,7 @@ class Motorcycle(Vehicle):
     def maintenance(self):
         print(f"Motorcycle {self.registration_no} is undergoing maintenance.")
 
-from vehicle import Vehicle
+
 
 class Truck(Vehicle):
     def __init__(self, registration_no, brand, mileage, status, fuel_capacity, current_fuel_level, no_axles, cargo_capacity):
@@ -92,12 +91,7 @@ class Truck(Vehicle):
     def maintenance(self):
         print(f"Truck {self.registration_no} is undergoing maintenance.")
 
-    
-class Driver:
-    def __init__(self, name, license_no, assigned_vehicle):
-        self.name = name
-        self.license_no = license_no
-        self.assigned_vehicle = assigned_vehicle
+
 
 
 #class for other vehicle types? 

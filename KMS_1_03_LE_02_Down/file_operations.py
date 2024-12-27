@@ -51,14 +51,15 @@ class FileOperations:
         try:
             with open(cls.main_file, "r") as file:
                 content = json.load(file)
-            content.append(person_data)
+            
 
             for existing_person in content:
                 if existing_person.get("id") == person_data["id"]:
                     print(f"Person already exists in records.")
                     return
-                                                            
 
+            content.append(person_data)
+            
             with open(cls.main_file, "w") as file:
                 json.dump(content, file, indent=4)
         except Exception as e:

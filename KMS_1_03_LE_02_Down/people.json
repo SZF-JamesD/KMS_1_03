@@ -14,5 +14,10 @@
         "id": "C002",
         "first name": "Jimmy",
         "last name": "John"
+    },
+    {
+        "id": "C003",
+        "first name": "Jim",
+        "last name": "Jimson"
     }
 ]

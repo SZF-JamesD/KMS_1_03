@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
+import re
 
 class BaseGui:
     def __init__(self, root, title="Application", geometry="800x600", resizable=(False, False), container_type="frame"):
@@ -37,7 +38,7 @@ class BaseGui:
             if self.container_type == "frame":
                 frame.grid(row=0, column=0, sticky="nsew")
             elif self.container_type == "notebook":
-                self.container.add(frame, text=frame_class.__name__)
+                self.container.add(frame, text=re.sub( r"([A-Z])", r" \1", frame_class.__name__).split())
 
     def show_frame(self, frame_class):
         #raise the specified frame (only applies to "frame" container type).
@@ -64,6 +65,18 @@ class NotebookBasedGui(BaseGui):
         super().__init__(root, title, geometry, resizable, container_type="notebook")
 
 
+class InputFields:
+    def __init__(self, root, field_list):
+        self.root = root
+        self.field_list = field_list
+
+        self.create_input_fields()
+
+        def create_input_fields(self):
+            for i, (field_label, field_name) in enumerate(field_list, start=3):
+                ttk.Label(self, text=f"{field_label}:").grid(row=i, column=0, sticky="w", padx=5, pady=5)
+                self.entries[field_name] = ttk.Entry(self)
+                self.entries[field_name].grid(row=i, column=0, sticky="e", padx=5, pady=5)
 
 class CheckButtons:
     def __init__(self, root, checkbox_names, start_row=0, start_column=0):
