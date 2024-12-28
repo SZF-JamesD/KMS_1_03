@@ -22,19 +22,37 @@ def read_json(file_path):
     try:
         with open(file_path, "r") as file:
             content = json.load(file)
+            if not isinstance(content, list):
+                print(f"Error: Expected a list in the JSON file, but got {type(content)}")
+                return []
             return  content
+    except FileNotFoundError:
+        print(f"File not found: {file_path}. Returning an empty list.")
+        return []
+    except json.JSONDecodeError as e:
+        print(f"Error decoding JSON: {e}. Returning an empty list.")
+        return[]
     except Exception as e:
         print(f"Error reading JSON: {e}")
         return []
     
 
-def write_json(file_path, data):
-    existing_data = {item.__dict__ for item in data.items()}
+def write_json(file_path, new_data):
     try:
-        with open(file_path, "w") as file:
-                json.dump(existing_data, file, indent=4)   
+        existing_data = read_json(file_path)
+
+        if not isinstance(new_data, list) or not all(isinstance(item, dict) for item in new_data):
+            raise ValueError("New data must be a list of dictionaries.")
+        
+        updated_data = existing_data + new_data
+
+        with open(file_path, "w")as file:
+            json.dump(updated_data, file, indent=4)
+
+        print(f"Data successfully added to {file_path}.")
+        
     except Exception as e:
-        print(f"Error reading JSON: {e}")
+        print(f"Error writing to JSON: {e}.")
         return
 
 

@@ -42,7 +42,7 @@ class Bicycle(Vehicle):
         super().__init__(registration_no, brand, mileage, status, fuel_capacity, current_fuel_level)
         self.bike_type = bike_type
         self.basket = basket
-    @abstractmethod
+
     def update_mileage(self, new_mileage):
         self.mileage = new_mileage
 
@@ -90,9 +90,3 @@ class Truck(Vehicle):
 
     def maintenance(self):
         print(f"Truck {self.registration_no} is undergoing maintenance.")
-
-
-
-
-#class for other vehicle types? 
-#ability to add new vehicles

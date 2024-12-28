@@ -3,12 +3,13 @@ from tkinter_utils import NotebookBasedGui
 from tkinter import ttk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import graph_utils, datetime
+from vehicle_class import Vehicle, Car, Truck, Bicycle, Motorcycle
 from file_utils import read_json, write_json
 
 class GeneralInfo(ttk.Frame):#total vehicles, time, date 
     def __init__(self, parent, controller):
         super().__init__(parent)
-        data = read_json("KMS_1_03_LE_03/KMS_1_03_LE_03_01_Down/company_vehicles.json")
+        data = read_json("company_vehicles.json")
         ttk.Label(self, text="General Information")
 
         self.info_container = ttk.Frame(self)
@@ -31,47 +32,85 @@ class GeneralInfo(ttk.Frame):#total vehicles, time, date
 class AddNewVehicle(ttk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
-        ttk.Label(self, text="Add New Veihicle")
+        ttk.Label(self, text="Add New Veihicle").grid(row=0, column=0, columnspan=2, pady=10)
 
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=1)
 
-        label = ttk.Label(self, text="New Vehicle Info")
-        label.grid(row=0, column=0, columnspan=2, sticky="w", padx=10,pady=10)
-
-        ttk.Label(self, text="Type of Vehicle").grid(row=1, column=0, sticky="w", padx=5, pady=5)
-        self.vehicle_var = tk.StringVar()
-        self.vehicle_dropdown = ttk.Combobox(self, textvariable=self.vehicle_var, values=["Car", "Truck", "Motorcycle", "Bicylce"], state="readonly")
-        self.vehicle_dropdown.grid(row=2, column=0, sticky="w", padx=5, pady=5)
-        self.vehicle_dropdown.set("Select Vehicle Type")
-        #self.vehicle_dropdown.bind("<<dropdown_selection>>", #function name)
-        #function with event maybe to get the choice = vehicle_dropdown.get()
-        self.entries = {}
-        general_entry_fields = [("Registration Number", "registration_no"),
-                                ("Brand", "brand"),
-                                ("Mileage", "mileage"),
-                                ("Status", "status"),
-                                ("Fuel Capacity", "fuel_capacity"),
-                                ("Current Fuel", "current_fuel_level")]
+        ttk.Label(self, text="New Vehicle Info").grid(row=1, column=0, columnspan=2, sticky="w", padx=10, pady=10)
         
-        if self.vehicle_var == "Car":
-            general_entry_fields.pop(general_entry_fields[5:])
-            general_entry_fields.append(("Number of Seats", "no_seats"), ("Trunk Capacity", "trunk_capacity"))#no_seats, trunk_capacity
-        #this will just keep adding though, need to remove from [5:] each time, and re-add
-    def create_fields(self, fields):
-        for i, (field_label, field_name) in enumerate(fields, start=3):
-            ttk.Label(self, text=f"{field_label}:").grid(row=i, column=0, sticky="w", padx=5, pady=5)
-            self.entries[field_name] = ttk.Entry(self)
-            self.entries[field_name].grid(row=i, column=0, sticky="e", padx=5, pady=5)
+        ttk.Label(self, text="Type of Vehicle").grid(row=1, column=0, sticky="w", padx=5, pady=5)
+                
+        self.entries = {}
+        self.vehicle_classes = {"Car": Car, 
+                                "Truck": Truck, 
+                                "Motorcycle": Motorcycle, 
+                                "Bicycle": Bicycle}
+        
+        self.vehicle_var = tk.StringVar()
+        self.vehicle_dropdown = ttk.Combobox(self, textvariable=self.vehicle_var, values=[key.capitalize() for key in self.vehicle_classes.keys()], state="readonly")
+        self.vehicle_dropdown.grid(row=3, column=0, sticky="w", padx=5, pady=5)
+        self.vehicle_dropdown.set("Select Vehicle Type")
+        self.vehicle_dropdown.bind("<<ComboboxSelected>>", self.update_fields)
+
+        self.create_fields(self.get_fields(Vehicle))
+
+
+    def get_fields(self, cls):
+        base_fields = set(Vehicle.__init__.__code__.co_varnames[1:]) # get class __init__ args
+        subclass_fields = set(cls.__init__.__code__.co_varnames[1:]) - base_fields
+        #print(f"Base: {base_fields}\nSubclass ({cls.__name__}) fields: {subclass_fields}")
+        return list(base_fields) + list(subclass_fields)
+
+    def create_fields(self, field_names):
+        for widget in self.grid_slaves():
+            if int(widget.grid_info()["row"]) > 3: #avoids clearing the dropdown or label
+                widget.destroy()
+
+        #print(f"Creating fields: {field_names}")
+
+        self.entries.clear()
+        for i, field_name in enumerate(field_names, start=4):
+            ttk.Label(self, text=f"{field_name.replace('_', ' ').capitalize()}").grid(row=i, column=0, sticky="w", padx=5, pady=5)
+            entry = ttk.Entry(self)
+            entry.grid(row=i, column=1, sticky="e", padx=5, pady=5)
+            self.entries[field_name] = entry
+        ttk.Button(self, text="Confirm", command=self.add_new).grid(row=i+2, column=0, sticky="w", padx=5, pady=5)
+
+    def update_fields(self, event):
+        vehicle_type = self.vehicle_var.get()
+        #print(f"selected vehicle type: {vehicle_type}")
+        vehicle_class = self.vehicle_classes.get(vehicle_type, Vehicle)
+        #print(f"mapped class: {vehicle_class.__name__}")
+        #print(f"Valid keys in vehicle_classes: {list(self.vehicle_classes.keys())}")
+
+        fields = self.get_fields(vehicle_class)
+        #print(f"Fields for {vehicle_type}: {fields}")
+        self.create_fields(fields)
+        
 
     def add_new(self):
-        pass
+        vehicle_type = self.vehicle_var.get()
+        if not vehicle_type:
+            print("Error, please select a vehicle type.")
+            return
+        
+        vehicle_data = {}
+        for field_name, entry in self.entries.items():
+            value = entry.get()
+            vehicle_data[field_name] = value
+
+        vehicle_data["type"] = vehicle_type
+
+        write_json("company_vehicles.json", [vehicle_data])
+        print("New vehicle added successfully!")   
+
 
 class SeeRecords(ttk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         ttk.Label(self, text="See Fleet Records").pack()
-        self.data = read_json("KMS_1_03_LE_03/KMS_1_03_LE_03_01_Down/company_vehicles.json")
+        self.data = read_json("company_vehicles.json")
         self.columns = self.extract_columns(self.data)
 
         self.tree_vert_scroll = ttk.Scrollbar(self, orient="vertical")

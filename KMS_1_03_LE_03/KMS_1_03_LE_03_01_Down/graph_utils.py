@@ -1,10 +1,10 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import file_utils
+from file_utils import read_csv_data
 
 def show_graph():
 
-    months, gasoline, diesel = file_utils.read_csv_data("KMS_1_03_LE_03/KMS_1_03_LE_03_01_Down/monthly_fuel_consumption.csv")
+    months, gasoline, diesel = read_csv_data("monthly_fuel_consumption.csv")
 
     barWidth = 0.25
     fig = plt.figure(figsize = (12, 8))
