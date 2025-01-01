@@ -1,10 +1,10 @@
 import tkinter as tk
 from tkinter_utils import NotebookBasedGui
-from tkinter import ttk
+from tkinter import ttk, messagebox
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import graph_utils, datetime
+import graph_utils, datetime, inspect
 from vehicle_class import Vehicle, Car, Truck, Bicycle, Motorcycle
-from file_utils import read_json, write_json
+from file_utils import read_json, write_json, write_csv_data
 
 class GeneralInfo(ttk.Frame):#total vehicles, time, date 
     def __init__(self, parent, controller):
@@ -57,10 +57,18 @@ class AddNewVehicle(ttk.Frame):
 
 
     def get_fields(self, cls):
-        base_fields = set(Vehicle.__init__.__code__.co_varnames[1:]) # get class __init__ args
-        subclass_fields = set(cls.__init__.__code__.co_varnames[1:]) - base_fields
-        #print(f"Base: {base_fields}\nSubclass ({cls.__name__}) fields: {subclass_fields}")
-        return list(base_fields) + list(subclass_fields)
+        # Get parameters of Vehicle's __init__ method
+        base_params = inspect.signature(Vehicle.__init__).parameters
+        base_fields = list(base_params.keys())[1:]  # Skip 'self'
+
+        # Get parameters of the subclass's __init__ method
+        subclass_params = inspect.signature(cls.__init__).parameters
+        subclass_fields = [
+            name for name in subclass_params.keys()
+            if name not in base_params and name != 'self'
+        ]
+
+        return base_fields + subclass_fields
 
     def create_fields(self, field_names):
         for widget in self.grid_slaves():
@@ -91,7 +99,7 @@ class AddNewVehicle(ttk.Frame):
 
     def add_new(self):
         vehicle_type = self.vehicle_var.get()
-        if not vehicle_type:
+        if vehicle_type == "Select Vehicle Type":
             print("Error, please select a vehicle type.")
             return
         
@@ -106,10 +114,10 @@ class AddNewVehicle(ttk.Frame):
         print("New vehicle added successfully!")   
 
 
-class SeeRecords(ttk.Frame):
+class RecordsAndFueling(ttk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
-        ttk.Label(self, text="See Fleet Records").pack()
+        ttk.Label(self, text="See Fleet Records").pack(pady=10)
         self.data = read_json("company_vehicles.json")
         self.columns = self.extract_columns(self.data)
 
@@ -137,6 +145,23 @@ class SeeRecords(ttk.Frame):
 
         self.load_data(self.data)
 
+        ttk.Label(self, text="Refuel Selected Vehicle").pack(pady=10)
+
+        fuel_input_frame = ttk.Frame(self)
+        fuel_input_frame.pack(pady=5)
+
+        ttk.Label(fuel_input_frame, text="Fuel Amount (L):").pack(side="left", padx=5)
+        self.fuel_entry = ttk.Entry(fuel_input_frame)
+        self.fuel_entry.pack(side="left", padx=5)
+
+        self.fuel_type = ttk.Combobox(self, text="Select Fuel Type", values=["Gasoline", "Diesel"], state="readonly")
+        self.fuel_type.set("Gasoline")
+        self.fuel_type.pack(side="left", padx=5)
+        
+
+        self.refuel_button = ttk.Button(self, text="Refuel", command=self.refuel_selected)
+        self.refuel_button.pack(side="left", padx=10)
+
     def extract_columns(self, data):
         if not data:
             return []
@@ -161,12 +186,45 @@ class SeeRecords(ttk.Frame):
             filtered_data = [row for row in self.data if row.get("type") == selected_filter]
         self.load_data(filtered_data)
 
+    def refuel_selected(self):
+        selected_item = self.tree.selection()
+        if not selected_item:
+            messagebox.showerror("Error", "Please select a vehicle to refuel.")
+            return
+        
+        reg_no = self.tree.item(selected_item[0], "values")[1]
+        fuel_amount = self.fuel_entry.get()
+        fuel_type = self.fuel_type.get()
 
-class Fueling(ttk.Frame):
-    def __init__(self, parent, controller):
-        super().__init__(parent)
-        ttk.Label(self, text="Refuel")
-        #enter vehicle reg, then type of fuel and amount
+        if not fuel_amount.isdigit() or float(fuel_amount) <= 0:
+            messagebox.showerror("Error", "Please enter a valid fuel amount.")
+            return
+        
+        if fuel_type not in ["Gasoline", "Diesel"]:
+            messagebox.showerror("Error", "Something went wrong with fuel type selection.")
+            return
+
+        fuel_amount = float(fuel_amount)
+
+        for vehicle in self.data:
+            if vehicle["registration_no"] == reg_no:
+                current_fuel = float(vehicle.get("current_fuel_level", 0))
+                fuel_capacity = float(vehicle.get("fuel_capacity", 0))
+
+                if current_fuel + fuel_amount > fuel_capacity:
+                    messagebox.showerror("Error", "Fuel amount exceeds the vehicle's capacity.")
+                    return
+                
+                vehicle["current_fuel_level"] = current_fuel + fuel_amount
+                write_json("company_vehicles.json", self.data)
+                write_csv_data("monthly_fuel_consumption.csv", fuel_type, fuel_amount)
+                self.load_data(self.data)
+                messagebox.showinfo("Success", f"Added {fuel_amount}L of {fuel_type} to {reg_no}.")
+                FuelConsumption.update_graph()
+                return
+            
+        messagebox.showerror("Error", "Vehicle not found.")
+
 
 class FuelConsumption(ttk.Frame):
     def __init__(self, parent, controller):
@@ -192,7 +250,7 @@ class FuelConsumption(ttk.Frame):
 if __name__ == "__main__":
     root = tk.Tk()
     app = NotebookBasedGui(root, title="Fleet Management")
-    app.add_frames([GeneralInfo, AddNewVehicle, SeeRecords, Fueling, FuelConsumption])
+    app.add_frames([GeneralInfo, AddNewVehicle, RecordsAndFueling, FuelConsumption])
 
     root.protocol("WM_DELETE_WINDOW", root.quit)
 

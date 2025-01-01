@@ -1,4 +1,4 @@
-import csv, json, random, vehicle_class
+import csv, json, random, vehicle_class, datetime
 
 def read_csv_data(file_path):
     months = []
@@ -10,12 +10,35 @@ def read_csv_data(file_path):
         for row in reader:
             months.append(row['Month'])
             try:
-                gasoline.append(float(row['Gasoline (Liters)']))
-                diesel.append(float(row['Diesel (Liters)']))
+                gasoline.append(float(row['Gasoline']))
+                diesel.append(float(row['Diesel']))
             except ValueError:
                 continue
     
     return months, gasoline, diesel
+
+
+def write_csv_data(file_path, fuel_type, fuel_amount):
+    mon, gas, dies = read_csv_data(file_path)
+
+    month = datetime.datetime.now().strftime("%b")
+    month_index = 0
+
+    for m in range(len(mon)):
+        if mon[m] == month:
+            month_index = m
+            if fuel_type == "Gasoline":
+                gas[month_index] += fuel_amount
+            elif fuel_type == "Diesel":
+                dies[month_index] += fuel_amount
+    
+    with open(file_path, mode="w", newline="") as file:
+        writer = csv.DictWriter(file, fieldnames=["Month", "Gasoline", "Diesel"])
+        writer.writeheader()
+        for i in range(len(mon)):
+            
+            writer.writerow({"Month": mon[i], "Gasoline":gas[i], "Diesel": dies[i]})
+  
 
 
 def read_json(file_path):
@@ -56,7 +79,7 @@ def write_json(file_path, new_data):
         return
 
 
-
+'''
 def generate_vehicle_data(num_vehicles):
     vehicles = []
     for _ in range(num_vehicles):
@@ -118,12 +141,14 @@ def generate_vehicle_data(num_vehicles):
             }
         vehicles.append(vehicle)
     return vehicles
-
+'''
 if __name__ == "__main__":
+    d = write_csv_data("monthly_fuel_consumption.csv", "Diesel", 10)
+    '''
     d = (read_json("company_vehicles.json"))
     print(d)
     for items in d:
-       print(items)
+       print(items)'''
     '''
     vehicles_data = generate_vehicle_data(100)
 

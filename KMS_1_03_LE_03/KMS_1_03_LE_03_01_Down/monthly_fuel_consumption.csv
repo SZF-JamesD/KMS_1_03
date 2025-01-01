@@ -1,13 +1,13 @@
-Month,Gasoline (Liters),Diesel (Liters)
-Jan,500,400
-Feb,480,420
-Mar,550,450
-Apr,600,500
-May,620,480
-Jun,590,470
-Jul,610,490
-Aug,580,460
-Sep,570,450
-Oct,600,500
-Nov,630,520
-Dec,650,530
+Month,Gasoline,Diesel
+Jan,240.0,150.0
+Feb,200.0,50.0
+Mar,100.0,40.0
+Apr,20.0,500.0
+May,12.0,454.0
+Jun,706.0,405.0
+Jul,405.0,222.0
+Aug,30.0,98.0
+Sep,16.0,500.0
+Oct,500.0,400.0
+Nov,400.0,500.0
+Dec,300.0,650.0
