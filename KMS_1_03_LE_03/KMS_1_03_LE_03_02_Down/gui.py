@@ -1,4 +1,4 @@
-#from utils.tkinter_utils import NotebookBasedGui
+from utils.tkinter_utils import NotebookBasedGui
 import tkinter as tk
 from tkinter import ttk
 
@@ -26,13 +26,13 @@ class Comitee(ttk.Frame):
 
 
 if __name__ == "__main__":
-    import os
-    print("Current working directory:", os.getcwd())
+    #import os
+    #print("Current working directory:", os.getcwd())
     #print(sys.path)
     root = tk.Tk()
-    #app = NotebookBasedGui(root, title="Club Management")
-    #app.add_frames([GeneralInfo, ManageMember, EventPlanning, Comitee])
+    app = NotebookBasedGui(root, title="Club Management")
+    app.add_frames([GeneralInfo, ManageMember, EventPlanning, Comitee])
 
     root.protocol("WM_DELETE_WINDOW", root.quit)
 
-    #app.run()
+    app.run()
