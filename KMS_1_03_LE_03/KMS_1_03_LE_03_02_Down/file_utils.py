@@ -1,45 +1,47 @@
-import csv, json, datetime
+import csv, json, person
+from faker import Faker
 
-def read_csv_data(file_path):
-    months = []
-    gasoline = []
-    diesel = []
-
-    with open(file_path, newline="") as csvfile:
-        reader = csv.DictReader(csvfile)
-        for row in reader:
-            months.append(row['Month'])
-            try:
-                gasoline.append(float(row['Gasoline']))
-                diesel.append(float(row['Diesel']))
-            except ValueError:
-                continue
-    
-    return months, gasoline, diesel
+def read_csv(file_path):
+    try:
+        with open(file_path, mode="r", newline="") as file:
+            reader = csv.DictReader(file)
+            return [row for row in reader]
+    except FileNotFoundError:
+        print(f"File {file_path} not found.")
+        return []
+    except Exception as e:
+        print(f"Error reading file {file_path}: {e}")
+        return []
 
 
-def write_csv_data(file_path, fuel_type, fuel_amount):
-    mon, gas, dies = read_csv_data(file_path)
-
-    month = datetime.datetime.now().strftime("%b")
-    month_index = 0
-
-    for m in range(len(mon)):
-        if mon[m] == month:
-            month_index = m
-            if fuel_type == "Gasoline":
-                gas[month_index] += fuel_amount
-            elif fuel_type == "Diesel":
-                dies[month_index] += fuel_amount
-    
-    with open(file_path, mode="w", newline="") as file:
-        writer = csv.DictWriter(file, fieldnames=["Month", "Gasoline", "Diesel"])
-        writer.writeheader()
-        for i in range(len(mon)):
-            
-            writer.writerow({"Month": mon[i], "Gasoline":gas[i], "Diesel": dies[i]})
+def write_csv(file_path, objects): # only really works if data is consistant
+    try:
+        if not objects:
+            raise ValueError("No objects to write to CSV.")
+        #print("objects",objects)
+        fieldnames = objects[0].keys() 
+        #print("fieldnames", fieldnames)
+        with open(file_path, mode="w", newline="") as file:
+            #print("wow")
+            writer = csv.DictWriter(file, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(obj for obj in objects)
+            print(f"Data successfully written to {file_path}.")
+            file.close()
+    except Exception as e:
+        print(f"Error writing to file {file_path}: {e}")
   
-
+'''
+def write_csv(file_path, data, fieldnames): # can work with less consistant data, as you must provide the headings yourself.
+    try:
+        with open(file_path, mode="w", newline="") as file:
+            writer = csv.DictWriter(file, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(data)
+        print(f"Data successfully written to {file_path}.")
+    except Exception as e:
+        print(f"Error writing to file {file_path}: {e}")
+'''
 
 def read_json(file_path):
     try:
@@ -79,6 +81,16 @@ def write_json(file_path, new_data):
         return
 
 
+def test_csv(file_path, amount_of_lines):
+    fake = Faker()
+    person_list = [] 
+    for i in range(amount_of_lines):
+        p = person.Member(i, fake.first_name(), fake.last_name(), fake.email(), fake.date_this_decade(), "Member")
+        person_list.append(p)
+    write_csv(file_path, person_list)
+    
+
+
 if __name__ == "__main__":
-    pass
+    test_csv("KMS_1_03_LE_03\KMS_1_03_LE_03_02_Down\members.csv", 15)
  

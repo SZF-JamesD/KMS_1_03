@@ -1,13 +1,12 @@
-from datetime import date
+from datetime import datetime
 
 class Event:
-    def __init__(self, event_name, date, location, time, description, attendees):
+    def __init__(self, event_name, location, date_time: datetime, description):
         self.event_name = event_name
-        self.date = date
+        self.date_time = date_time
         self.location = location
-        self.time = time
         self.description = description
-        self.attendees = attendees
+        self.attendees = []
         self.events = []
 
     def add_event(self, event_name):

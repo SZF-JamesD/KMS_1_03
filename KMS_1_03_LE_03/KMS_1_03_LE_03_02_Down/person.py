@@ -2,53 +2,93 @@ from abc import ABC, abstractmethod
 from datetime import date
 
 class Person(ABC):
-    def __init__(self, id, name, email):
+    def __init__(self, id, first_name, last_name, email, role):
         self.id = id
-        self.name = name
+        self.first_name = first_name
+        self.last_name = last_name
         self.email = email
+        self.role = role
+
+    def pay_fees(self):
+        print(f"{self.first_name} {self.last_name} paid fees.")
 
     def get_id(self):
         return self.id
 
-    def get_name(self):
-        return self.name
-    
-    @abstractmethod
+    def get_first_name(self):
+        return self.first_name
+
+    def get_last_name(self):
+        return self.last_name
+
+    def get_email(self):
+        return self.email
+
     def get_role(self):
+       return self.role
+
+    @abstractmethod
+    def to_dict(self):
         pass
 
+    @classmethod
+    @abstractmethod
+    def from_dict(cls, data):
+        pass
+        
 
 class Member(Person):
-    def __init__(self, id, name, email, join_date: date, status):
-        super().__init__(id, name, email)
+    def __init__(self, id, first_name, last_name, email, join_date: date, role):
+        super().__init__(id, first_name, last_name, email, role)
         self.join_date = join_date
-        self.status = status
 
-    def pay_fees(self):
-        print(f"{self.name} paid fees.")
+    def get_join_date(self):
+        return self.join_date
 
-    def get_role(self):
-        return "Member"
+    def to_dict(self):
+        return {
+            "ID": self.id,
+            "First Name": self.first_name,
+            "Last Name": self.last_name,
+            "Email": self.email,  
+            "Join Date": self.join_date,
+            "Role": self.get_role()
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        return cls(
+            id=data["ID"],
+            first_name=data["First Name"],
+            last_name=data["Last Name"],
+            email=data["Email"],
+            role=data["Role"],
+            join_date=data["Join Date"]
+        )
 
 
 class ComiteeMember(Person):
-    def __init__(self, id, name, email, comitee_role):
-        super().__init__(id, name, email)
-        self.comitee_role = comitee_role
+    def __init__(self, id, first_name, last_name, email, role):
+        super().__init__(id, first_name, last_name, email, role)
+        
 
-    def get_role(self):
-        return f"Board Member - {self.comitee_role}."
+    def to_dict(self):
+        """Include comitee_role for comitee members."""
+        return {
+            "ID": self.id,
+            "First Name": self.first_name,
+            "Last Name": self.last_name,
+            "Email": self.email,
+            "Role": self.get_role()
+        }
 
-
-
-class Volunteer(Person):
-    def __init__(self, id: int, name: str, email: str, hours: int = 0):
-        super().__init__(id, name, email)
-        self.hours = hours
-
-    def logHours(self, hours: int):
-        self.hours += hours
-        print(f"{self.name} logged {hours} hours. Total: {self.hours}")
-
-    def getRole(self) -> str:
-        return "Volunteer"
+    @classmethod
+    def from_dict(cls, data):
+        """Convert a dictionary to a ComiteeMember object."""
+        return cls(
+            id=data["ID"],
+            first_name=data["First Name"],
+            last_name=data["Last Name"],
+            email=data["Email"],
+            role=data["Role"]
+        )
