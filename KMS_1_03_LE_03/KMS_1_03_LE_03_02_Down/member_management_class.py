@@ -9,6 +9,9 @@ class MemberManagement:
         self.load_members()
 
 
+    def get_members(self):
+        return self.members
+    
     def load_members(self):
         data = read_csv(self.file_path)
         for item in data:
@@ -32,7 +35,7 @@ class MemberManagement:
     def add_member(self, member_data):
         first_name = member_data.get("first_name", "")
         last_name = member_data.get("last_name", "")
-        member_id = len(self.members)+1
+        member_id = int(self.members[-1].get_id()) +1
         role = member_data.get("dropdown_selection", "")
         email = member_data.get("email", "")
         try:

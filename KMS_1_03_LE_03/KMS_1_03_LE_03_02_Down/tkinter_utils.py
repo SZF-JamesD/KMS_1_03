@@ -25,6 +25,7 @@ class BaseGui:
         elif self.container_type == "notebook":
             container = ttk.Notebook(self.root)
             container.pack(fill="both", expand=True)
+            self.notebook = container
             return container
         else:
             raise ValueError(f"Unsupported container type: {self.container_type}.")
@@ -33,7 +34,8 @@ class BaseGui:
         #add frames from a list of frame classes.
         for frame_class in frame_classes:
             frame = frame_class(self.container, self)
-            self.frames[frame_class] = frame
+            frame_name = frame_class.__name__
+            self.frames[frame_name] = frame
 
             if self.container_type == "frame":
                 frame.grid(row=0, column=0, sticky="nsew")
@@ -214,22 +216,61 @@ class DropdownMenu:
     def get_name(self):
         return "dropdown_selection"
 
-'''
-class DropdownMenu(ttk.Frame):
-    def __init__(self, parent, label_text, options, default=None, **kwargs):
-        super().__init__(parent, **kwargs)
-        self.label_text = label_text
-        self.options = options
-        self.default = default or options[0]
+class ScrollableListbox:
+    def __init__(self, container, items=None, height=10, width=50, scrollbar="vertical", scroll_side="right", scroll_fill="y", listbox_view="yview"):
+        """
+        A Listbox widget with a vertical scrollbar.
 
-        self.variable = tk.StringVar(value=self.default)
+        container: The parent widget/container to place the listbox in.
+        items: List of items to populate the listbox with (optional).
+        height: The number of visible rows in the listbox.
+        width: The width of the listbox in characters.
+        scrollbar: Direction of the scrollbar, vertical or horizontal.
+        scroll_side: Side of the scrollbar.
+        scroll_fill: Fill axis for scroll bar.
+        listbox_view: Direction of the box view.
+        """
+        self.container = container
+        self.items = items or []
+        self.height = height
+        self.width = width
+        self.scrollbar = scrollbar
+        self.scroll_side = scroll_side
+        self.scroll_fill = scroll_fill
+        self.listbox_view = listbox_view
 
-        self._create_components()
 
-    def _create_components(self):
-        ttk.Label(self, text=self.label_text).pack(side=tk.LEFT, anchor = "w", padx=5, pady=5)
-        self.dropdown = ttk.OptionMenu(self, self.variable, self.default, *self.options)
-        self.dropdown.pack(side=tk.LEFT, anchor = "w", padx=5, pady=5)
+        self.create_listbox()
 
-    def get_value(self):
-        return self.variable.get()'''
+    def create_listbox(self):
+        """Create the Listbox and add a scrollbar."""
+        listbox_frame = ttk.Frame(self.container)
+        listbox_frame.pack(fill="both", expand=True, padx=10, pady=10)
+
+        # Create the Listbox widget
+        self.listbox = tk.Listbox(listbox_frame, height=self.height, width=self.width)
+        self.listbox.pack(side="left", fill="both", expand=True)
+
+        # Create a Scrollbar for the Listbox
+        scrollbar = ttk.Scrollbar(listbox_frame, orient=self.scrollbar, command=self.listbox_view)
+        scrollbar.pack(side=self.scroll_side, fill=self.scroll_fill)
+
+        # Link the scrollbar with the listbox
+        self.listbox.config(yscrollcommand=scrollbar.set)
+
+        # Insert items into the Listbox
+        self.update_items(self.items)
+
+    def update_items(self, items):
+        """Update the items in the listbox."""
+        self.listbox.delete(0, tk.END)  # Clear the current list
+        for item in items:
+            self.listbox.insert(tk.END, item)  # Add new items
+
+    def get_selected_item(self):
+        """Get the currently selected item from the listbox."""
+        try:
+            selected_index = self.listbox.curselection()
+            return self.listbox.get(selected_index)
+        except IndexError:
+            return None

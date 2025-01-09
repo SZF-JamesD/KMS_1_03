@@ -1,4 +1,4 @@
-import csv, json, person
+import csv, json, person, event
 from faker import Faker
 
 def read_csv(file_path):
@@ -81,16 +81,22 @@ def write_json(file_path, new_data):
         return
 
 
-def test_csv(file_path, amount_of_lines):
+def test_members_csv(file_path, amount_of_lines):
     fake = Faker()
     person_list = [] 
     for i in range(amount_of_lines):
-        p = person.Member(i, fake.first_name(), fake.last_name(), fake.email(), fake.date_this_decade(), "Member")
+        p = person.Member(i, fake.first_name(), fake.last_name(), fake.email(), fake.date_this_decade(), "Member").to_dict()
         person_list.append(p)
     write_csv(file_path, person_list)
     
-
+def test_event_csv(file_path, amount_of_lines):
+    fake = Faker()
+    event_list = []
+    for i in range(amount_of_lines):
+        e = event.Event(fake.company(), fake.address(), fake.date_time(), fake.random_lowercase_letter()).to_dict()
+        event_list.append(e)
+    write_csv(file_path, event_list)
 
 if __name__ == "__main__":
-    test_csv("KMS_1_03_LE_03\KMS_1_03_LE_03_02_Down\members.csv", 15)
- 
+    test_members_csv("KMS_1_03_LE_03/KMS_1_03_LE_03_02_Down/members.csv", 15)
+    test_event_csv("KMS_1_03_LE_03/KMS_1_03_LE_03_02_Down/events.csv", 15)

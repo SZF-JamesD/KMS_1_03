@@ -7,10 +7,7 @@ class Event:
         self.location = location
         self.description = description
         self.attendees = []
-        self.events = []
 
-    def add_event(self, event_name):
-        self.events.append(event_name)
 
     def add_participant(self, person_name):
         self.attendees.append(person_name)
@@ -23,9 +20,38 @@ class Event:
         else:
             print(f"{person_name} not registered for {self.event_name}")
 
-    def list_participants(self):
+    def get_attendees(self):
         return self.attendees
     
-    def get_event_details(self):
+    def get_event_name(self):
+        return self.event_name
+    
+    def get_event_description(self):
         return self.description
     
+    def get_event_location(self):
+        return self.location
+    
+    def get_event_date_time(self):
+        return self.date_time
+    
+    def to_dict(self):
+        return {
+            "Event Name": self.event_name,
+            "Location": self.location,
+            "Date and Time": self.date_time,
+            "Description": self.description,  
+            "Attendees": self.attendees         
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        event = cls(
+            event_name=data["Event Name"],
+            location=data["Location"],
+            date_time=data["Date and Time"],
+            description=data["Description"],)
+        
+        event.attendees=data.get("Attendees")
+        return event
+        
