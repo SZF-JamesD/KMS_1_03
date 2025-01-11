@@ -1,11 +1,12 @@
 from event import Event
-from datetime import date, datetime
+from validation_utils import is_valid_address, is_valid_date
+from tkinter_utils import MessageBoxHandler
 from file_utils import write_csv, read_csv
-from member_management_class import MemberManagement
 
 class EventManagement:
-    def __init__(self, file_path):
+    def __init__(self, file_path, member_manager):
         self.file_path = file_path
+        self.member_manager = member_manager
         self.events = []
         self.load_events()
 
@@ -32,12 +33,17 @@ class EventManagement:
         location = event_data.get("location", "")
         date_time = event_data.get("date_time", "")
         description = event_data.get("dropdown_selection", "")
+        if not is_valid_address(location):
+            return
+        date, time = date_time.split(" ")
+        if not is_valid_date(date):
+            return
         try:
             new_event = Event(event_name, location, date_time, description)
             self.events.append(new_event)
-            print(f"'{event_name}' added successfully.")
+            MessageBoxHandler.show_info("Success", f"{event_name} added successfully.")
         except Exception as e:
-            print(f"Error adding member: {e}")
+            MessageBoxHandler.show_error("Error", f"Error adding member: {e}")
 
 
     def remove_event(self, event_data):
@@ -46,11 +52,10 @@ class EventManagement:
             if event_name in (event.get_event_name() for event in self.events):
                 self.events = [event for event in self.events if event.get_event_name() != event_name]
                 print(f"Event '{event_name}' removed successfully.")
-                print([event.get_event_name() for event in self.events])
                 return
-            print(f"Event '{event_name}' not registered.")
+            raise Exception(f"Event '{event_name}' not registered.")
         except Exception as e:
-            print(f"Error removing event: {e}")
+            MessageBoxHandler.show_error("Error", f"Error removing event: {e}")
 
 
     def edit_event(self, event_data):
@@ -58,36 +63,44 @@ class EventManagement:
         location = event_data.get("location", "")
         date_time = event_data.get("date_time", "")
         description = event_data.get("description", "")
+        if not is_valid_address(location):
+            return
+        date, time = date_time.split(" ")
+        if not is_valid_date(date):
+            return
         try:
             for i, event in enumerate(self.events):
                 if event.get_event_name() == event_name:
                     event_participatns = event.get_attendees()
                     new_event = Event(event_name, location, date_time, description)
-                    new_event.attendees = event_participatns                   
+                    new_event.attendees = event_participatns                  
                     self.events[i] = new_event
-                    print(f"{event_name} edited successfully")
+                    MessageBoxHandler.show_info("Success", f"{event_name} edited successfully")
                     return
-            print(f"Event '{event_name}' not registered.")
+            raise Exception(f"Event '{event_name}' not registered.")
         except Exception as e:
-            print(f"Error editing event: {e}")
+            MessageBoxHandler.show_error("Error", f"Error editing event: {e}")
 
 
-    def add_member_to_event(self, event_data, member_data):
+    def add_member_to_event(self, event_data):
         event_name = event_data.get("event_name", "")
-        member_id = member_data.get("id", "")
+        member_id = event_data.get("id", "")
         try:
             for event in self.events:
                 if event.get_event_name() == event_name:
-                    for member in MemberManagement.members:
+                    for member in self.member_manager.members:
+                        print(member.get_id())
                         if member.get_id() == member_id:
-                            event.attendees.append(member)
-                            print(f"{member.get_name()} added to {event_name}.")
-                        else:
-                            print(f"Member ID number {member_id} not registered.")
-                else:
-                    print(f"Event '{event_name} not registered.")            
+                            member_name = member.get_first_name()
+                            event.attendees.append(member_name)
+                            MessageBoxHandler.show_info("Success", f"{member_name} added to {event_name}.")
+                            return
+                        elif member == self.member_manager.members[-1]:
+                            raise Exception(f"Member ID number {member_id} not registered.")
+                elif event == self.events[-1]:
+                    raise Exception(f"Event '{event_name} not registered.")            
         except Exception as e:
-            print(f"Error adding member to event: {e}")
+            MessageBoxHandler.show_error("Error", f"Error adding member to event: {e}")
 
     def remove_member_from_event(self, event_data, member_data):
         event_name = event_data.get("event_name", "")
@@ -95,13 +108,13 @@ class EventManagement:
         try:
             for event in self.events:
                 if event.get_event_name() == event_name:
-                    for member in MemberManagement.members:
+                    for member in self.member_manager.members:
                         if member.get_id() == member_id:
                             event.attendees.remove(member)
-                            print(f"{member.get_name()} removed from {event_name}.")
+                            MessageBoxHandler.show_info("Success", f"{member.get_name()} removed from {event_name}.")
                         else:
-                            print(f"Member ID number {member_id} not registered.")
+                            raise Exception(f"Member ID number {member_id} not registered.")
                 else:
-                    print(f"Event '{event_name} not registered.")            
+                    raise Exception(f"Event '{event_name} not registered.")            
         except Exception as e:
-            print(f"Error removing member from event: {e}")
+            MessageBoxHandler.show_error("Error", f"Error removing member from event: {e}")

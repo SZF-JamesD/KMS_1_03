@@ -85,7 +85,7 @@ class InnerNotebookTab:
         self.widget_instances = []
 
         self.add_widgets()
-
+    
     def add_widgets(self):
         for widget_class, widget_kwargs in self.widgets:
             #if widget_class == InputFields:
@@ -112,7 +112,19 @@ class InnerNotebookTab:
 
     def get_tab_frame(self):
         return self.tab_frame
-
+    
+    def update_inner_tab(self, event, tab_name, update_variable_info, updated_widget_index):
+        '''
+        To dynamically refresh inner tabs
+        event: is normally going to be 'self.inner_notebook.bind("<<NotebookTabChanged>>", InnerNotebookTab.update_inner_tab())'
+        tab_name:name of the tab to be updated
+        update_variable_info: what is going to be inside the variable, such as a string or list etc
+        update_widget: The index of the widget to be updated within the tab.
+        '''
+        selected_inner_tab = event.widget.tab(event.widget.select(), "text")
+        if selected_inner_tab == tab_name:   
+            widget_instance = self.widget_instances[updated_widget_index]
+            widget_instance.update_items(update_variable_info)
 
 class InputFields:
     def __init__(self, container, field_list):
@@ -217,7 +229,7 @@ class DropdownMenu:
         return "dropdown_selection"
 
 class ScrollableListbox:
-    def __init__(self, container, items=None, height=10, width=50, scrollbar="vertical", scroll_side="right", scroll_fill="y", listbox_view="yview"):
+    def __init__(self, container, items=None, height=10, width=50, scrollbar1="vertical", scrollbar2=None, scroll_side1="right", scroll_side2=None, scroll_fill="y", listbox_view="yview"):
         """
         A Listbox widget with a vertical scrollbar.
 
@@ -225,8 +237,10 @@ class ScrollableListbox:
         items: List of items to populate the listbox with (optional).
         height: The number of visible rows in the listbox.
         width: The width of the listbox in characters.
-        scrollbar: Direction of the scrollbar, vertical or horizontal.
-        scroll_side: Side of the scrollbar.
+        scrollbar1: Direction of the scrollbar, vertical or horizontal.
+        scrollbar2: Direction of the second scrollbar, vertical or horizontal.
+        scroll_side1: Side of the scrollbar.
+        scroll_side2: If you want a second scrollbar.
         scroll_fill: Fill axis for scroll bar.
         listbox_view: Direction of the box view.
         """
@@ -234,8 +248,10 @@ class ScrollableListbox:
         self.items = items or []
         self.height = height
         self.width = width
-        self.scrollbar = scrollbar
-        self.scroll_side = scroll_side
+        self.scrollbar1 = scrollbar1
+        self.scrollbar2 = scrollbar2
+        self.scroll_side1 = scroll_side1
+        self.scroll_side2 = scroll_side2
         self.scroll_fill = scroll_fill
         self.listbox_view = listbox_view
 
@@ -248,16 +264,34 @@ class ScrollableListbox:
         listbox_frame.pack(fill="both", expand=True, padx=10, pady=10)
 
         # Create the Listbox widget
-        self.listbox = tk.Listbox(listbox_frame, height=self.height, width=self.width)
+        self.listbox = tk.Listbox(listbox_frame, font="TkFixedFont", height=self.height, width=self.width)
+        
+
+        if self.scrollbar2 == None:
+            # Create a Scrollbar for the Listbox
+            scrollbar = ttk.Scrollbar(listbox_frame, orient=self.scrollbar1, command=self.listbox_view)
+            scrollbar.pack(side=self.scroll_side1, fill=self.scroll_fill)
+            
+            # Link the scrollbar with the listbox
+            if self.scrollbar1 == "vertical":
+                self.listbox.config(yscrollcommand=scrollbar.set)
+            else:
+                self.listbox.config(xscrollcommand=scrollbar.set)
+
+        else:
+            if self.scrollbar1 == "vertical":
+                h_scrollbar = ttk.Scrollbar(listbox_frame, orient=self.scrollbar2, command=self.listbox.xview)
+                h_scrollbar.pack(side=self.scroll_side2, fill="x")
+                v_scrollbar = ttk.Scrollbar(listbox_frame, orient=self.scrollbar1, command=self.listbox_view)
+                v_scrollbar.pack(side=self.scroll_side1, fill=self.scroll_fill)
+                             
+            else:
+                h_scrollbar = ttk.Scrollbar(listbox_frame, orient=self.scrollbar1, command=self.listbox_view)
+                h_scrollbar.pack(side=self.scroll_side1, fill=self.scroll_fill)
+                v_scrollbar = ttk.Scrollbar(listbox_frame, orient=self.scrollbar2, command=self.listbox.yview)
+                v_scrollbar.pack(side=self.scroll_side2, fill="y")          
+            self.listbox.config(yscrollcommand=v_scrollbar.set, xscrollcommand=h_scrollbar.set)
         self.listbox.pack(side="left", fill="both", expand=True)
-
-        # Create a Scrollbar for the Listbox
-        scrollbar = ttk.Scrollbar(listbox_frame, orient=self.scrollbar, command=self.listbox_view)
-        scrollbar.pack(side=self.scroll_side, fill=self.scroll_fill)
-
-        # Link the scrollbar with the listbox
-        self.listbox.config(yscrollcommand=scrollbar.set)
-
         # Insert items into the Listbox
         self.update_items(self.items)
 
@@ -274,3 +308,24 @@ class ScrollableListbox:
             return self.listbox.get(selected_index)
         except IndexError:
             return None
+        
+
+class MessageBoxHandler:
+    #utility class for displaying and handling error, warning, and info messages.
+
+    @staticmethod
+    def show_error(title, message):
+        messagebox.showerror(title, message)
+
+    @staticmethod
+    def show_warning(title, message):
+        messagebox.showwarning(title, message)
+
+    @staticmethod
+    def show_info(title, message):
+        messagebox.showinfo(title, message)
+
+    @staticmethod
+    def handle_exception(exception):
+        exception_message = f"An error occured: {str(exception)}"
+        MessageBoxHandler.show_error("Error", exception_message)

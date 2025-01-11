@@ -2,11 +2,12 @@ from abc import ABC, abstractmethod
 from datetime import date
 
 class Person(ABC):
-    def __init__(self, id, first_name, last_name, email, role):
+    def __init__(self, id, first_name, last_name, email, join_date: date, role):
         self.id = id
         self.first_name = first_name
         self.last_name = last_name
         self.email = email
+        self.join_date = join_date
         self.role = role
 
     def pay_fees(self):
@@ -23,7 +24,10 @@ class Person(ABC):
 
     def get_email(self):
         return self.email
-
+    
+    def get_join_date(self):
+        return self.join_date
+    
     def get_role(self):
        return self.role
 
@@ -39,11 +43,10 @@ class Person(ABC):
 
 class Member(Person):
     def __init__(self, id, first_name, last_name, email, join_date: date, role):
-        super().__init__(id, first_name, last_name, email, role)
+        super().__init__(id, first_name, last_name, email, join_date, role)
         self.join_date = join_date
 
-    def get_join_date(self):
-        return self.join_date
+
 
     def to_dict(self):
         return {
@@ -52,7 +55,7 @@ class Member(Person):
             "Last Name": self.last_name,
             "Email": self.email,  
             "Join Date": self.join_date,
-            "Role": self.get_role()
+            "Role": self.role
         }
 
     @classmethod
@@ -62,14 +65,14 @@ class Member(Person):
             first_name=data["First Name"],
             last_name=data["Last Name"],
             email=data["Email"],
-            role=data["Role"],
-            join_date=data["Join Date"]
+            join_date=data["Join Date"],
+            role=data["Role"]
         )
 
 
 class ComiteeMember(Person):
-    def __init__(self, id, first_name, last_name, email, role):
-        super().__init__(id, first_name, last_name, email, role)
+    def __init__(self, id, first_name, last_name, email, join_date, role):
+        super().__init__(id, first_name, last_name, email, join_date, role)
         
 
     def to_dict(self):
@@ -79,7 +82,8 @@ class ComiteeMember(Person):
             "First Name": self.first_name,
             "Last Name": self.last_name,
             "Email": self.email,
-            "Role": self.get_role()
+            "Join Date": self.join_date,
+            "Role": self.role
         }
 
     @classmethod
@@ -90,5 +94,6 @@ class ComiteeMember(Person):
             first_name=data["First Name"],
             last_name=data["Last Name"],
             email=data["Email"],
+            join_date=data["Join Date"],
             role=data["Role"]
         )

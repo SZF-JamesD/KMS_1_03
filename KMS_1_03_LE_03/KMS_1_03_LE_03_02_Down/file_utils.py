@@ -17,10 +17,14 @@ def read_csv(file_path):
 def write_csv(file_path, objects): # only really works if data is consistant
     try:
         if not objects:
-            raise ValueError("No objects to write to CSV.")
-        #print("objects",objects)
+                with open(file_path, mode="w", newline="") as file:
+                    print("No objects to write. Creating an empty CSV file.")
+                    fieldnames = []
+                    writer = csv.DictWriter(file, fieldnames=fieldnames)
+                    return
+
         fieldnames = objects[0].keys() 
-        #print("fieldnames", fieldnames)
+
         with open(file_path, mode="w", newline="") as file:
             #print("wow")
             writer = csv.DictWriter(file, fieldnames=fieldnames)

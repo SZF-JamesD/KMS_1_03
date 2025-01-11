@@ -1,4 +1,5 @@
 from datetime import datetime
+import ast
 
 class Event:
     def __init__(self, event_name, location, date_time: datetime, description):
@@ -7,18 +8,6 @@ class Event:
         self.location = location
         self.description = description
         self.attendees = []
-
-
-    def add_participant(self, person_name):
-        self.attendees.append(person_name)
-        print(f"{person_name} registered for {self.event_name}.")
-
-    def remove_participant(self, person_name):
-        if person_name in self.attendees:
-            self.attendees.remove(person_name)
-            print(f"{person_name} removed from list for {self.event_name}.")
-        else:
-            print(f"{person_name} not registered for {self.event_name}")
 
     def get_attendees(self):
         return self.attendees
@@ -41,7 +30,7 @@ class Event:
             "Location": self.location,
             "Date and Time": self.date_time,
             "Description": self.description,  
-            "Attendees": self.attendees         
+            "Attendees": self.attendees  
         }
 
     @classmethod
@@ -51,7 +40,14 @@ class Event:
             location=data["Location"],
             date_time=data["Date and Time"],
             description=data["Description"],)
+        attendees = data.get("Attendees")
+        attendees = attendees[1:-1]
+        attendees = [item.strip().strip("'") for item in attendees.split(",")]
         
-        event.attendees=data.get("Attendees")
+        #attendees = ast.literal_eval(data.get("Attendees"))
+        
+        if attendees[0] == '':
+            attendees.pop(0)
+        event.attendees = attendees    
         return event
         

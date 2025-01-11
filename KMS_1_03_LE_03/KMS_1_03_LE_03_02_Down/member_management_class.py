@@ -1,6 +1,8 @@
 from person import Member, ComiteeMember
 from datetime import date
 from file_utils import write_csv, read_csv
+from validation_utils import is_valid_name, is_valid_email_address
+from tkinter_utils import MessageBoxHandler
 
 class MemberManagement:
     def __init__(self, file_path):
@@ -35,20 +37,23 @@ class MemberManagement:
     def add_member(self, member_data):
         first_name = member_data.get("first_name", "")
         last_name = member_data.get("last_name", "")
-        member_id = int(self.members[-1].get_id()) +1
+        member_id = int(self.members[-1].get_id()) +1 if len(self.members) != 0 else 1
         role = member_data.get("dropdown_selection", "")
         email = member_data.get("email", "")
+        if not is_valid_name(first_name + " " + last_name):
+            return 
+        if not is_valid_email_address(email):
+            return
         try:
             join_date = date.today()
             if role == "Comitee Member":
-                new_member = ComiteeMember(member_id, first_name, last_name, email, role)
+                new_member = ComiteeMember(member_id, first_name, last_name, email, join_date, role)
             else:
-                new_member = Member(member_id, first_name, last_name, email, role, join_date)
+                new_member = Member(member_id, first_name, last_name, email, join_date, role)
             self.members.append(new_member)
-            print(f"{role} '{first_name} {last_name}' added successfully.")
-            #print("this should be objects", self.members)
+            MessageBoxHandler.show_info("Success",f"{role} '{first_name} {last_name}' added successfully.")
         except Exception as e:
-            print(f"Error adding member: {e}")
+            MessageBoxHandler.show_error("Validation Error", str(e))
 
 
     def remove_member(self, id):
@@ -56,11 +61,11 @@ class MemberManagement:
         try:
             if id in (member.get_id() for member in self.members):
                 self.members = [member for member in self.members if member.get_id() != id]
-                print(f"Member with ID '{id}' removed successfully.")
-                return
-            print(f"ID number {id} not registered.")
+                MessageBoxHandler.show_info("Success", f"Member with id {id} removed successfully.")
+            else:
+                raise Exception(f"Member with ID {id} not in register")
         except Exception as e:
-            print(f"Error removing member: {e}")
+            MessageBoxHandler.show_error("Error", e)
 
 
     def change_role(self, member_data):
@@ -71,11 +76,11 @@ class MemberManagement:
                 if member.get_id() == id:
                     first_name = member.get_first_name()
                     last_name = member.get_last_name()
-                    email = member.email
-                    join_date = member.join_date
+                    email = member.get_email()
+                    join_date = member.get_join_date()
                     
                     if new_role == "Comitee Member":
-                        new_member = ComiteeMember(id, first_name, last_name, email, new_role)
+                        new_member = ComiteeMember(id, first_name, last_name, email, join_date, new_role)
                     elif new_role == "Member":
                         new_member = Member(id, first_name, last_name, email, join_date, new_role)
                     else:
@@ -85,9 +90,9 @@ class MemberManagement:
                     self.members[i] = new_member
                     print(f"Role of {first_name} {last_name} changed to '{new_role}'.")
                     return
-            print(f"ID number {id} not registered.")
+            raise Exception(f"Member with ID number {id} not in register.")
         except Exception as e:
-            print(f"Error changing role: {e}")
+            MessageBoxHandler.show_error("Error", e)
 
 
     def pay_fees(self, member_data):
@@ -97,6 +102,8 @@ class MemberManagement:
                 if member.get_id() == id:
                     member.pay_fees()
                     return
-            print(f"ID number {id} not registered.")
-        except Exception as e:
-            print(f"Error processing fee payment: {e}")
+            raise ValueError(f"Member with ID number {id} not in register.")
+        except Exception:
+            MessageBoxHandler.show_error("Error", "Error processing payment.")
+        except ValueError as e:
+            MessageBoxHandler.show_error("Error", e)
