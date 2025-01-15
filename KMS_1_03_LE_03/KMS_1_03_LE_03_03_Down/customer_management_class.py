@@ -37,8 +37,9 @@ class CustomerManagement:
                 "name": customer.name,
                 "address": customer.address
             })
+        update_params = [(customer['name'], customer['address'], customer['customer_id']) for customer in data]
         fetch_all_params = [(customer['customer_id'],) for customer in data]
-        self.db_handler.save_data(main_query, check_query, update_query, data=data, fetch_all_params=[fetch_all_params[i] for i in range(len(data))])
+        self.db_handler.save_data(main_query, check_query, update_query,update_params=update_params, data=data, fetch_all_params=[fetch_all_params[i] for i in range(len(data))])
 
     def create_customer(self, customer_info):
         first_name = customer_info.get("first_name")

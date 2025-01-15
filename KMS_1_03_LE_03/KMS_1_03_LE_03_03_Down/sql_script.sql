@@ -15,7 +15,4 @@ CREATE TABLE Accounts (
     FOREIGN KEY (customer_id) REFERENCES Customers(customer_id)
 );
 
-UPDATE Accounts 
-SET account_type = 'Checking', balance = 1000 
-WHERE account_number = '000001' AND customer_id = '0001';
 

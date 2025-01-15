@@ -41,7 +41,7 @@ class DatabaseHandler:
             print(f"Error fetching data with subquery: {e}")
             return []
 
-    def save_data(self, main_query, check_query, update_query, sub_query=None, sub_check_query=None, sub_update_query=None, data=None, fetch_all_params = None):
+    def save_data(self, main_query, check_query, update_query, sub_query=None, sub_check_query=None, sub_update_query=None, update_params=None, data=None, fetch_all_params = None):
         try:
 
             if self.connection.in_transaction:
@@ -50,34 +50,22 @@ class DatabaseHandler:
             
             self.connection.start_transaction()
 
-            for i, item in enumerate(data):
-                main_params = tuple(item.values())
+            for i, item in enumerate(data):               
                 params = fetch_all_params[i]
-                #print(f"Processing item: {item}")
-                #print(f"Main query: {main_query}")
-                #print(f"Main parameters: {main_params}")
-                # Check if the main record exists
                 if self.fetch_all(check_query, params)[0]['COUNT(*)'] > 0:
-                    #print(f"Checking if account exists with account_number: {item['account_number']} and customer_id: {item['customer_id']}")
-
-                    print("Updating existing record")
-                    print(f"Update Query: {update_query}")
-                    print(f"Main parameters: {main_params}")
+                    main_params = update_params[i]
                     self.execute_query(update_query, main_params)
                 else:
-                    print(f"Main query: {main_query}")
-                    print(f"Main parameters: {main_params}")
+                    main_params = tuple(item.values())
                     self.execute_query(main_query, main_params)
 
                 # Handle related data
                 if sub_query and 'related_data' in item:
-                    #print("Processing related data")
                     for related_item in item['related_data']:
                         sub_params = tuple(related_item.values())
 
                         # Check if the related record exists
                         if self.fetch_all(sub_check_query, (list(related_item.values())[0],))[0]['COUNT(*)'] > 0:
-                            #print("Updating related record")
                             self.execute_query(sub_update_query, sub_params)
                         else:
                             self.execute_query(sub_query, sub_params)
