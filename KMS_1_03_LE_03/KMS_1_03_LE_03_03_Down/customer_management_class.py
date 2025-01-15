@@ -29,6 +29,7 @@ class CustomerManagement:
         main_query = """INSERT INTO Customers (customer_id, name, address) VALUES (%s, %s, %s)"""
         check_query = "SELECT COUNT(*) FROM Customers WHERE customer_id = %s"
         update_query = "UPDATE Customers SET name = %s, address = %s WHERE customer_id = %s"
+        
         data = []
         for customer in self.get_customers():
             data.append({
@@ -36,7 +37,8 @@ class CustomerManagement:
                 "name": customer.name,
                 "address": customer.address
             })
-        self.db_handler.save_data(main_query, check_query, update_query, data=data)
+        fetch_all_params = [(customer['customer_id'],) for customer in data]
+        self.db_handler.save_data(main_query, check_query, update_query, data=data, fetch_all_params=[fetch_all_params[i] for i in range(len(data))])
 
     def create_customer(self, customer_info):
         first_name = customer_info.get("first_name")

@@ -29,7 +29,8 @@ class AccountManagement:
         data = []
         for account in self.get_accounts():
             data.append(account.to_dict())
-        self.db_handler.save_data(main_query, check_query, update_query, data=data)
+        fetch_all_params = [(account['account_number'], account['customer_id']) for account in data]
+        self.db_handler.save_data(main_query, check_query, update_query, data=data, fetch_all_params=[fetch_all_params[i] for i in range(len(data))])
 
     def create_account(self, account_data):
         customer_id = account_data.get("customer_id")

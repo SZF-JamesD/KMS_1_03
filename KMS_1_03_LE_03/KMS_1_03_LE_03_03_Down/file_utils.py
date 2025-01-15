@@ -41,7 +41,7 @@ class DatabaseHandler:
             print(f"Error fetching data with subquery: {e}")
             return []
 
-    def save_data(self, main_query, check_query, update_query, sub_query=None, sub_check_query=None, sub_update_query=None, data=None):
+    def save_data(self, main_query, check_query, update_query, sub_query=None, sub_check_query=None, sub_update_query=None, data=None, fetch_all_params = None):
         try:
 
             if self.connection.in_transaction:
@@ -50,14 +50,15 @@ class DatabaseHandler:
             
             self.connection.start_transaction()
 
-            for item in data:
-                #print(f"Processing item: {item}")
+            for i, item in enumerate(data):
                 main_params = tuple(item.values())
+                params = fetch_all_params[i]
+                #print(f"Processing item: {item}")
                 #print(f"Main query: {main_query}")
                 #print(f"Main parameters: {main_params}")
                 # Check if the main record exists
-                if self.fetch_all(check_query, (list(item.values())[0],list(item.values())[3]))[0]['COUNT(*)'] > 0:
-                    print(f"Checking if account exists with account_number: {item['account_number']} and customer_id: {item['customer_id']}")
+                if self.fetch_all(check_query, params)[0]['COUNT(*)'] > 0:
+                    #print(f"Checking if account exists with account_number: {item['account_number']} and customer_id: {item['customer_id']}")
 
                     print("Updating existing record")
                     print(f"Update Query: {update_query}")
