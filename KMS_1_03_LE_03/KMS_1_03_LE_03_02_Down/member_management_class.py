@@ -7,7 +7,7 @@ from tkinter_utils import MessageBoxHandler
 class MemberManagement:
     def __init__(self, file_path):
         self.file_path = file_path
-        self.members = []
+        self.members = []  
         self.load_members()
 
 

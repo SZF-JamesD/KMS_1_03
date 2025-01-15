@@ -180,7 +180,7 @@ class CheckButtons:
 
         def show_states(self): # purely for debugging, displays state of boxes in the console 
             states = self.get_checkbox_states()
-            print("Checkbox states:", states)
+            
 
 class Buttons:
     def __init__(self, amount: int, location: tuple, text: tuple, command: tuple, side: tuple, anchor: tuple, padx: tuple, pady: tuple):

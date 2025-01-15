@@ -1,8 +1,7 @@
 from tkinter_utils import *
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk
 from member_management_class import MemberManagement
-from datetime import date
 from event_management_class import EventManagement
 
 #date and role being mixed up in writing dunno why fix later.
