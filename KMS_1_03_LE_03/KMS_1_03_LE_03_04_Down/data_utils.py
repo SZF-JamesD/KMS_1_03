@@ -184,6 +184,7 @@ class DatabaseHandler:
 
 
 
+
 def read_csv(file_path):
     try:
         with open(file_path, mode="r", newline="") as file:
