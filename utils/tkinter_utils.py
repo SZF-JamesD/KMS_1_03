@@ -148,6 +148,7 @@ class InputFields:
         for field_name, entry in self.entries.items():
             field_values[field_name] = entry.get()
 
+
         return field_values
 
 
@@ -225,7 +226,7 @@ class CheckButtons:
 
     def show_states(self): # purely for debugging, displays state of boxes in the console 
         states = self.get_checkbox_states()
-        print(states)
+
             
 
 class Buttons:
@@ -250,7 +251,7 @@ class Buttons:
 
 
 class DropdownMenu:
-    def __init__(self, container, options: list, side, anchor, padx, pady,label_text=None, default=None):
+    def __init__(self, container, options: list, side, anchor, padx, pady, trace_add_value=None, label_text=None, default=None, callback=None):
         self.container = container
         self.label_text = label_text
         self.options = options
@@ -259,6 +260,8 @@ class DropdownMenu:
         self.anchor = anchor
         self.padx = padx
         self.pady = pady
+        self.trace_add_value = trace_add_value #write, read, or unset
+        self.callback = callback
 
         self.string_var = tk.StringVar(value=self.default) 
         self.create_dropdown()
@@ -267,12 +270,19 @@ class DropdownMenu:
         if self.label_text:
             ttk.Label(self.container, text=self.label_text).pack(side=self.side, anchor=self.anchor, padx=self.padx, pady=self.pady)
         ttk.OptionMenu(self.container, self.string_var, self.default, *self.options).pack(side=self.side, anchor=self.anchor, padx=self.padx, pady=self.pady)
+        
+        if self.trace_add_value:
+            self.string_var.trace_add(self.trace_add_value, self._on_value_change)
 
     def get_dropdown_value(self):
         return self.string_var.get()
     
     def get_name(self):
         return "dropdown_selection"
+    
+    def _on_value_change(self, *args):
+        if self.callback:
+            self.callback(self.string_var.get())
 
 class ScrollableListbox:
     def __init__(self, container, items=None, height=10, width=50, scrollbar1="vertical", scrollbar2=None, scroll_side1="right", scroll_side2=None, scroll_fill="y", listbox_view="yview"):

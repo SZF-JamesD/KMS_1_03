@@ -55,11 +55,17 @@ def is_valid_address(address):
 
 def is_valid_date(date):
     try:
+        standardized_date = re.sub(r'[-/,_.]', "-", date)
+        date_pattern = r"^(19[2-9][0-9]|20[0-4][0-9]|2050)-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"
+
+        if re.match(date_pattern, standardized_date):
+            parsed_date = datetime.strptime(date, "%Y-%m-%d")
+            date = parsed_date.strftime("%d-%m-%Y")
         date_pattern = r'^(0?[1-9]|[12][0-9]|3[01])\.(0?[1-9]|1[0-2])\.(19[2-9][0-9]|20[0-1][0-9]|202[0-4])$'
         date = re.sub(r'[-/,_]', ".", date)
         if re.match(date_pattern, date):
             day, month, year = map(int, date.split('.'))
-            validated_date = datetime.datetime(year, month, day)
+            validated_date = datetime(year, month, day)
             return validated_date.strftime("%d.%m.%Y")
         else:
             raise ValueError("Date format is incorrect. Must be DD.MM.YYYY.")
@@ -102,3 +108,11 @@ def is_valid_duration(duration):
                 MessageBoxHandler.show_error("Value Error", "Minutes and seconds must be between 00 and 59.")
         else:
             MessageBoxHandler.show_error("Value Error", "Invalid time format. Use mm:ss or hh:mm:ss.")
+'''
+def is_valid_car_regi(plate):
+    austrian_plate_regex = r"^[A-Z]{1,2}-[A-Z]{1,3}[0-9]{1,4}$"
+    if re.match(austrian_plate_regex, plate):
+        return True
+    else:
+        MessageBoxHandler.show_error("Value Error", "Invalid liscence plate format. Please enter an Austrian plate no.")
+        return False'''
