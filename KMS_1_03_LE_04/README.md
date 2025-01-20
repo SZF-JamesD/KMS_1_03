@@ -1,1 +1,1 @@
-launch from gui
+launch from dist/exe
